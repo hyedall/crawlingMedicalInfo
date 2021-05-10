@@ -66,3 +66,8 @@ scrapy crawl medicinespider
 ```
 에러메시지없이 정상실행되는지 확인한다.
 
+#### 3. 크콜링 진행
+``` 
+pip install scrapy-fake-useragent
+```
+
