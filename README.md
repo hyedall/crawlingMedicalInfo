@@ -43,3 +43,26 @@ Use "scrapy <command> -h" to see more info about a command
 
 ```
 
+## 2. 프로젝트 
+
+### 1. 약품 크롤링
+
+#### 1. 프로젝트 생성
+```
+scrapy startproject medicine
+```
+
+#### 2. spider 생성
+``` 
+cd medicine
+
+scrapy genspider medicinespider nedrug.mfds.go.kr
+```
+![Cap 2021-05-10 10-27-10-958](https://user-images.githubusercontent.com/7462877/117594945-511e5180-b17a-11eb-9ea1-242b2c6de98a.jpg)
+
+#### 3. 프로젝트 실행
+```
+scrapy crawl medicinespider
+```
+에러메시지없이 정상실행되는지 확인한다.
+
