@@ -60,13 +60,14 @@ scrapy genspider medicinespider nedrug.mfds.go.kr
 ```
 ![Cap 2021-05-10 10-27-10-958](https://user-images.githubusercontent.com/7462877/117594945-511e5180-b17a-11eb-9ea1-242b2c6de98a.jpg)
 
-#### 3. 프로젝트 실행
+#### 3. 크콜링 진행
 ```
 scrapy crawl medicinespider
 ```
 에러메시지없이 정상실행되는지 확인한다.
 
-#### 3. 크콜링 진행
+#### 4. 설치 패키지
+- useragent를 무작위로 생성해주는 패키지를 설치한다.
 ``` 
 pip install scrapy-fake-useragent
 ```

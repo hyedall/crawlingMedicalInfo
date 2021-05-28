@@ -28,7 +28,7 @@ class MedicineSpider(scrapy.Spider):
     # 약푹목록 페이지의 response
     def parse_list_item(self, response):
 
-        self.logger.info('drug_list_url ====> %s' % response.url)
+        # self.logger.info('drug_list_url ====> %s' % response.url)
         # self.logger.info('drug_list_text ====> %s' % response.text)
 
         # 페이지에 있는 약품들을 하나씩 확인함
@@ -36,20 +36,109 @@ class MedicineSpider(scrapy.Spider):
             # self.logger.info('medicine_item ====> %s' % medicine_item)
             # self.logger.info('medicine_item.get() ====> %s' % medicine_item.get())
 
-            # 약품 하나의 세부 정보를 조회하는 테스트, 약품명, 제조사등
-            # for td_items in medicine_item.css('td'):
-            #     self.logger.info('td_items ===> %s' % td_items)
-            #     self.logger.info('td_items.get() ===> %s' % td_items.get())
-
+            # medicine_item 처리방식 1
             # class나 id로 td를 판별하기 힘들기 때문에 하나씩 직접 가져옴
-            # 약품명
-            medicine_name = medicine_item.xpath('//td[2]')
-            self.logger.info('medicine_name ===> %s' % medicine_name)
-            self.logger.info('medicine_name.get() ===> %s' % medicine_name.get())
+            # 품목명 (약품명)
+            # medicine_name = medicine_item.xpath('./td[2]/span/a/text()').get()
+            medicine_name = medicine_item.css('td:nth-child(2) > span > a::text').get()
+            # self.logger.info('medicine_name ===> %s' % medicine_name)
+
+            # 품목일련번호
+            # medicine_seq_no = medicine_item.xpath('./td[4]/span[2]/text()').get()
+            medicine_seq_no = medicine_item.css('td:nth-child(4) > span:nth-child(2)::text').get()
+            # self.logger.info('medicine_seq_no ===> %s' % medicine_seq_no)
+
+            # 제조사 (업체명)
+            # company_name = medicine_item.xpath('./td[3]/span[2]/text()').get()
+            company_name = medicine_item.css('td:nth-child(3) > span:nth-child(2)::text').get()
+            # self.logger.info('company_name ===> %s' % company_name)
+
+            # 주성분 (유효성분)
+            # main_ingredient = medicine_item.xpath('./td[10]/span[2]/text()').get()
+            main_ingredient = medicine_item.css('td:nth-child(10) > span:nth-child(2)::text').get()
+            # self.logger.info('main_ingredient ===> %s' % main_ingredient)
+
+            # 품목구분(의약품, 의약외품, 생물의약품, 마약류, 첨단바이오, 한약(생약)제제등
+            # medicine_kind_cd = medicine_item.xpath('./td[7]/span[2]/text()').get()
+            medicine_kind_cd = medicine_item.css('td:nth-child(7) > span:nth-child(2)::text').get()
+            # self.logger.info('medicine_kind_cd ===> %s' % medicine_kind_cd)
+
+            # 상세페이지 URL. 리스트에는 없는 정보를 가져올.
+            detail_url = medicine_item.css('td:nth-child(2) > span > a::attr(href)').get()
+            # self.logger.info('detail_url ===> %s' % detail_url)
+
+            yield scrapy.Request(response.urljoin(detail_url), self.parse_detail,
+                                 meta={'medicine_name': medicine_name, 'medicine_seq_no': medicine_seq_no,
+                                       'company_name': company_name, 'main_ingredient': main_ingredient,
+                                       'medicine_kind_cd': medicine_kind_cd})
+
+    def parse_detail(self, response):
+        self.logger.info('drug_detail_list_url ====> %s' % response.url)
+        self.logger.info('drug_detail_list_text ====> %s' % response.text)
+
+        # 상세페이지 #####
+        # 포장정보
+
+        # 유효기간
+
+        # 효능효과
+
+        # 저장방법
+
+        # 주의사항 (사용자주의사항) DB - userAttention, info_box mt30 pt0 notice
 
 
 
 
+        # 복용방법 (용법용량)
+
+        # item = MedicineItem()
+        # item['medicine_name'] = response.meta['medicine_name']
+        # item['medicine_seq_no'] = response.meta['medicine_seq_no']
+        # item['company_name'] = response.meta['company_name']
+        # item['main_ingredient'] = response.meta['main_ingredient']
+        # item['medicine_kind_cd'] = response.meta['medicine_kind_cd']
+        #
+        # yield item
+
+        # https://www.tutorialspoint.com/scrapy/scrapy_requests_and_responses.htm
+        # return scrapy.Request(self.tablet_url + "200500547", self.parse_tablet,
+        #                       meta={'medicine_name': response.meta['medicine_name'],
+        #                             'medicine_seq_no': response.meta['medicine_seq_no'],
+        #                             'company_name': response.meta['company_name'],
+        #                             'main_ingredient': response.meta['main_ingredient'],
+        #                             'medicine_kind_cd': response.meta['medicine_kind_cd']})
+
+    # def parse_tablet(self, response):
+    #     self.logger.info('parse_tablet_url ====> %s' % response.url)
+    #     self.logger.info('parse_tablet_text ====> %s' % response.url)
+    #     print()
+    #     print()
+    #     self.logger.info(response)
+    #     print()
+    #     print()
 
 
+
+        # 낱알 정보 #########
+        # 약품이미지URL
+
+        # 보험코드
+
+        """ medicine_item 처리방식 2
+        # medicine_item( tr) 의 하위의 td를 for문을 통해 처리하는 방식
+        # for i, td_items in enumerate(medicine_item.css('td')):
+        # self.logger.info('td_items index ===> %d' % i)
+        # self.logger.info('td_items ===> %s' % td_items)
+        # self.logger.info('td_items.get() ===> %s' % td_items.get())
+        # 품목명 (약품명)
+        # if i == 1:
+        #     medicine_name = td_items.css('span > a::text').get()
+        #     self.logger.info('medicine_name ===> %s' % medicine_name)
+
+        # 품목일련번호
+        # elif i == 3:
+        #     medicine_seq_no = td_items.css('span:nth-child(2)::text').get()
+        #     self.logger.info('medicine_seq_no ===> %s' % medicine_seq_no)
+        """
 
