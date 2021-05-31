@@ -73,33 +73,81 @@ class MedicineSpider(scrapy.Spider):
                                        'medicine_kind_cd': medicine_kind_cd})
 
     def parse_detail(self, response):
-        self.logger.info('drug_detail_list_url ====> %s' % response.url)
-        self.logger.info('drug_detail_list_text ====> %s' % response.text)
+        # self.logger.info('drug_detail_list_url ====> %s' % response.url)
+        # self.logger.info('drug_detail_list_text ====> %s' % response.text)
 
-        # 상세페이지 #####
-        # 포장정보
+        detail_count = 1
 
-        # 유효기간
+        store_method = ''
+        expiration_date = ''
+        unit = ''
+        for detail_info in response.css('table.s-dr_table.dr_table_type2.s-view-table.ss_table > tr'):
 
-        # 효능효과
+            if detail_count == 1:
+                # 저장방법 DB store_method
+                # self.logger.info("### 저장방법 %s" % detail_info.xpath('td/text()').extract())
+                # self.logger.info("### [[저장방법]] %s" % detail_info.css('td::text').get())
+                store_method = detail_info.css('td::text').get()
+            elif detail_count == 2:
+                # 유효기간(사용기간) - DB expiration_date,
+                # self.logger.info("### [[유효기간(사용기간)]] %s" % detail_info.css('td::text').get())
+                expiration_date = detail_info.css('td::text').get()
+            elif detail_count == 5:
+                # 포장정보 - DB unit
+                # self.logger.info("### [[포장정보]] %s" % detail_info.css('td::text').get())
+                unit = detail_info.css('td::text').get()
 
-        # 저장방법
+            detail_count += 1
+
+        # self.logger.info('%s--%s--%s' % (store_method, expiration_date, unit) )
+
+        # 복용방법 (용법용량) - DB usage_Volume,
+        usage_volume = ''
+        for usage_volume_html in response.css('div.info_box.mt20.pt0 p'):
+            # self.logger.info('[복용방법]%s' % usage_volume_html.css('p::text').get())
+            try:
+                usage_volume += usage_volume_html.css('p::text').get() + '\n'
+            except TypeError:
+                self.logger.info('[복용방법 TypeError]%s' % usage_volume_html.css('p::text').get())
+
+        # self.logger.info('[복용방법]%s' % usage_volume)
+
+        # 효능효과 - DB effect,
+        effect = ''
+        for effect_html in response.css('div#_ee_doc p'):
+            # self.logger.info('[효능효과]%s' % effect_html.css('p::text').get())
+            try:
+                effect += effect_html.css('p::text').get() + '\n'
+            except TypeError:
+                self.logger.info('[효능효과 TypeError]%s' % effect_html.css('p::text').get())
+
+        # self.logger.info('[효능효과]%s' % effect)
 
         # 주의사항 (사용자주의사항) DB - userAttention, info_box mt30 pt0 notice
+        user_attention = ''
+        for user_attention_html in response.css('div.info_box.mt30.pt0.notice p'):
+            # self.logger.info('[주의사항 (사용자주의사항)]%s' % user_attention_html.css('p::text').get())
+            try:
+                user_attention += user_attention_html.css('p::text').get() + '\n'
+            except TypeError:
+                self.logger.info('[주의사항 (사용자주의사항) TypeError]%s' % user_attention_html.css('p::text').get())
 
+        # self.logger.info('[주의사항 (사용자주의사항)]%s' % user_attention)
 
+        item = MedicineItem()
+        item['medicine_seq_no'] = response.meta['medicine_seq_no']
+        item['medicine_name'] = response.meta['medicine_name']
+        item['company_name'] = response.meta['company_name']
+        item['unit'] = unit
+        item['expiration_date'] = expiration_date
+        item['effect'] = effect
+        item['store_method'] = store_method
+        item['user_attention'] = user_attention
+        item['usage_volume'] = usage_volume
+        item['main_ingredient'] = response.meta['main_ingredient']
+        item['medicine_kind_cd'] = response.meta['medicine_kind_cd']
 
-
-        # 복용방법 (용법용량)
-
-        # item = MedicineItem()
-        # item['medicine_name'] = response.meta['medicine_name']
-        # item['medicine_seq_no'] = response.meta['medicine_seq_no']
-        # item['company_name'] = response.meta['company_name']
-        # item['main_ingredient'] = response.meta['main_ingredient']
-        # item['medicine_kind_cd'] = response.meta['medicine_kind_cd']
-        #
-        # yield item
+        yield item
 
         # https://www.tutorialspoint.com/scrapy/scrapy_requests_and_responses.htm
         # return scrapy.Request(self.tablet_url + "200500547", self.parse_tablet,
@@ -109,16 +157,14 @@ class MedicineSpider(scrapy.Spider):
         #                             'main_ingredient': response.meta['main_ingredient'],
         #                             'medicine_kind_cd': response.meta['medicine_kind_cd']})
 
-    # def parse_tablet(self, response):
-    #     self.logger.info('parse_tablet_url ====> %s' % response.url)
-    #     self.logger.info('parse_tablet_text ====> %s' % response.url)
-    #     print()
-    #     print()
-    #     self.logger.info(response)
-    #     print()
-    #     print()
-
-
+        # def parse_tablet(self, response):
+        #     self.logger.info('parse_tablet_url ====> %s' % response.url)
+        #     self.logger.info('parse_tablet_text ====> %s' % response.url)
+        #     print()
+        #     print()
+        #     self.logger.info(response)
+        #     print()
+        #     print()
 
         # 낱알 정보 #########
         # 약품이미지URL
@@ -141,4 +187,3 @@ class MedicineSpider(scrapy.Spider):
         #     medicine_seq_no = td_items.css('span:nth-child(2)::text').get()
         #     self.logger.info('medicine_seq_no ===> %s' % medicine_seq_no)
         """
-
