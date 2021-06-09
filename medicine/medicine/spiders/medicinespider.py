@@ -21,6 +21,7 @@ class MedicineSpider(scrapy.Spider):
 
         # 전체 페이지를 순회함
         # for pageNum in range(1, totalPage+1):
+        # 샘플 4페이지 크롤링
         for pageNum in range(1, 4):
             pageUrl = 'https://nedrug.mfds.go.kr/searchDrug?page=' + str(pageNum)
             yield scrapy.Request(pageUrl, self.parse_list_item)

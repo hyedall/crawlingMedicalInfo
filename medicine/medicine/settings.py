@@ -36,5 +36,10 @@ DOWNLOADER_MIDDLEWARES = {
   'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }
 
+# 엑셀 출력을 위한 pipelines 설정
+ITEM_PIPELINES = {
+  'medicine.pipelines.MedicinePipeline': 300,
+}
+
 # 츌력 인코딩
 FEED_EXPORT_ENCODING = 'utf-8'
